@@ -1,9 +1,14 @@
 # 🎓 IntelliCampus Hub
 
 **IntelliCampus Hub** is a verified, student-centric social and academic networking platform designed to connect students and alumni across colleges. It combines the engagement of modern social platforms with the trust and focus required for academic collaboration.
-<img width="1864" height="960" alt="image" src="https://github.com/user-attachments/assets/f4534aaa-417f-47d9-801b-0e4bdc28842d" />
-<img width="1898" height="964" alt="image" src="https://github.com/user-attachments/assets/db474f11-90d9-46e1-b67b-1fa0aa9f9210" />
-<img width="1880" height="962" alt="image" src="https://github.com/user-attachments/assets/0867442b-f4f2-44ee-97ad-4e8f37c928df" />
+
+<img width="1831" height="956" alt="image" src="https://github.com/user-attachments/assets/971e57ca-28b9-4a97-a71a-dcf0d80c1c6e" />
+
+<img width="1847" height="960" alt="image" src="https://github.com/user-attachments/assets/2584163d-4c99-4355-9709-3fc2abe7064c" />
+
+<img width="1881" height="970" alt="image" src="https://github.com/user-attachments/assets/e6063ab1-e206-4aed-91d6-91e35a61ff50" />
+
+
 
 
 
