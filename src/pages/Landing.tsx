@@ -19,7 +19,7 @@ const Landing = () => {
             <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
               <GraduationCap className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">StudentSpace</span>
+            <span className="text-xl font-bold">IntelliCampus</span>
           </motion.div>
 
           <motion.div
@@ -60,12 +60,9 @@ const Landing = () => {
               </motion.div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
-                <span className="gradient-text">StudentSpace</span>
+                <span className="text-foreground">The Verified Network for </span>
                 <br />
-                <span className="text-foreground">A Digital Space for</span>
-                <br />
-                <span className="text-foreground">Students to </span>
-                <span className="text-primary">Connect</span>
+                <span className="text-primary">Academic Communities</span>
               </h1>
 
               <p className="text-lg text-muted-foreground mb-8 max-w-lg mx-auto lg:mx-0">
@@ -243,7 +240,7 @@ const Landing = () => {
               Ready to Connect?
             </h2>
             <p className="text-primary-foreground/80 mb-8 max-w-lg mx-auto">
-              Join thousands of students already building meaningful connections on StudentSpace
+              Join thousands of students already building meaningful connections on IntelliCampus
             </p>
             <Link to="/connect">
               <Button variant="hero" size="xl" className="bg-card text-foreground hover:bg-card/90">
@@ -262,10 +259,10 @@ const Landing = () => {
             <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center">
               <GraduationCap className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-semibold">StudentSpace</span>
+            <span className="font-semibold">IntelliCampus</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            © 2026 StudentSpace. All rights reserved.
+            © 2026 IntelliCampus. All rights reserved.
           </p>
         </div>
       </footer>

@@ -13,6 +13,7 @@ import { NotificationsPopover } from './NotificationsPopover';
 
 const navItems = [
   { icon: Home, label: 'Feed', path: '/feed' },
+  { icon: FolderKanban, label: 'Projects', path: '/feed/projects' },
   { icon: GraduationCap, label: 'Alumni', path: '/feed/old-students' },
   { icon: Building2, label: 'Colleges', path: '/feed/other-colleges' },
   { icon: MessageCircle, label: 'Messages', path: '/feed/messages' },
@@ -80,7 +81,7 @@ const AppLayout = () => {
             <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center">
               <GraduationCap className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold">StudentSpace</span>
+            <span className="text-lg font-bold">IntelliCampus</span>
           </Link>
           <NotificationsPopover />
         </div>
@@ -97,6 +98,19 @@ const AppLayout = () => {
           >
             <Home className="w-5 h-5" />
             <span className="font-medium">Home</span>
+          </Link>
+
+          <Link
+            to="/feed/projects"
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-xl mb-1 transition-all duration-200",
+              location.pathname === '/feed/projects'
+                ? "gradient-bg text-primary-foreground shadow-soft"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <FolderKanban className="w-5 h-5" />
+            <span className="font-medium">Projects</span>
           </Link>
 
           <Link
@@ -191,7 +205,7 @@ const AppLayout = () => {
             <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center">
               <GraduationCap className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold">StudentSpace</span>
+            <span className="text-lg font-bold">IntelliCampus</span>
           </Link>
           <NotificationsPopover />
         </header>
@@ -201,7 +215,7 @@ const AppLayout = () => {
       {/* Mobile Bottom Navigation */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
         <div className="flex justify-around items-center h-16 px-2">
-          {navItems.slice(0, 5).map((item) => {
+          {navItems.slice(0, 6).map((item) => {
             const isActive = location.pathname === item.path ||
               (item.path === '/feed' && location.pathname === '/feed');
 

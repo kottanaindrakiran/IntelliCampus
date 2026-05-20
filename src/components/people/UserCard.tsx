@@ -27,6 +27,8 @@ const UserCard = ({ user }: UserCardProps) => {
 
     const handleFollowClick = (e: React.MouseEvent) => {
         e.stopPropagation();
+        if (isLoading) return;
+        
         if (isFollowing) {
             unfollow();
         } else {

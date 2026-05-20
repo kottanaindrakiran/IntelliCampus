@@ -61,7 +61,7 @@ export const useStates = () => {
         .order('state');
 
       if (error) throw error;
-      
+
       // Get unique states
       const uniqueStates = [...new Set(data.map(c => c.state).filter(Boolean))];
       return uniqueStates as string[];

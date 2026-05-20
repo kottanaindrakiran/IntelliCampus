@@ -6,11 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   GraduationCap, ArrowLeft, ArrowRight, Check, Upload,
-  MapPin, Building, GitBranch, Calendar, User, Mail, Lock, FileText, Eye, EyeOff
+  MapPin, Building, GitBranch, Calendar, User, Mail, Lock, FileText, Eye, EyeOff,
+  Loader2, CheckCircle2, XCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { branches, generateYears } from '@/data/constants';
-import { useStates, useCollegesByState, useCampuses } from '@/hooks/useColleges';
+import { collegeData } from '@/data/collegeData';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Select,
@@ -41,6 +42,10 @@ const Connect = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Verification states
+  const [verificationState, setVerificationState] = useState<'idle' | 'verifying' | 'success' | 'error'>('idle');
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+
   // Form data
   const [formData, setFormData] = useState({
     state: '',
@@ -56,16 +61,25 @@ const Connect = () => {
     confirmPassword: '',
   });
 
-  // Fetch data from Supabase
-  const { data: states } = useStates();
-  const { data: colleges } = useCollegesByState(formData.state || undefined);
-  const { data: campuses } = useCampuses(selectedCollegeId || undefined);
-
+  // Profile Photo state is handled in formData
+  
   const currentYear = new Date().getFullYear();
   const isOldStudent = formData.passingYear && parseInt(formData.passingYear) < currentYear;
 
   const updateFormData = (field: string, value: string | File | null) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      
+      // Reset dependent fields
+      if (field === 'state') {
+        newData.college = '';
+        newData.campus = '';
+      } else if (field === 'college') {
+        newData.campus = '';
+      }
+      
+      return newData;
+    });
   };
 
   const canProceed = () => {
@@ -75,7 +89,7 @@ const Connect = () => {
       case 3: return !!formData.campus;
       case 4: return !!formData.branch;
       case 5: return !!formData.passingYear;
-      case 6: return !!formData.fullName && !!formData.email && !!formData.document;
+      case 6: return !!formData.fullName && !!formData.email && verificationState === 'success';
       case 7: return formData.password.length >= 6 && formData.password === formData.confirmPassword;
       default: return false;
     }
@@ -85,14 +99,14 @@ const Connect = () => {
     // Email Validation for Current Students (Step 6)
     if (currentStep === 6 && !isOldStudent) {
       const email = formData.email.toLowerCase();
-      const validDomains = ['.edu', '.ac.in', '.edu.in'];
+      const validDomains = ['.edu', '.ac.in', '.edu.in', 'srmist.edu.in'];
       const isValidEdu = validDomains.some(domain => email.endsWith(domain));
 
       if (!isValidEdu) {
         toast({
           variant: "destructive",
-          title: "Invalid Email Address",
-          description: "Current students must use a valid college email ending in .edu or .ac.in. Personal emails (Gmail, etc.) are only allowed for Alumni.",
+          title: "Invalid College Email Address",
+          description: "Current students must use a valid college email ending in .edu, .ac.in, or your college's specific domain (like @srmist.edu.in). Personal emails (Gmail, etc.) are only allowed for Alumni.",
         });
         return;
       }
@@ -211,7 +225,7 @@ const Connect = () => {
           // Calculate batch_start roughly (assuming 4 years) or leave null if not critical
           batch_start: parseInt(formData.passingYear) - 4,
           role: 'student', // Default role
-          verification_status: isOldStudent ? (formData.document ? 'pending' : 'unverified') : 'verified', // Simple logic for now
+          verification_status: verificationState === 'success' ? 'verified' : (isOldStudent ? 'pending' : 'unverified'),
         });
 
       if (profileError) throw profileError;
@@ -235,7 +249,7 @@ const Connect = () => {
 
       toast({
         title: "Registration Successful! 🎉",
-        description: "Welcome to StudentSpace! Verification details submitted.",
+        description: "Welcome to IntelliCampus! Verification details submitted.",
       });
       navigate('/login');
 
@@ -251,21 +265,96 @@ const Connect = () => {
     }
   };
 
-  const handleFileUpload = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (field: string) => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       updateFormData(field, file);
+      if (field === 'document') {
+        handleDocumentVerify(file);
+      }
+    }
+  };
+
+  const handleDocumentVerify = async (file: File) => {
+    if (!formData.fullName || !formData.college) {
+      toast({
+        variant: "destructive",
+        title: "Required Fields Missing",
+        description: "Please enter your full name and select your college before uploading your ID for verification.",
+      });
+      return;
+    }
+
+    setVerificationState('verifying');
+    setVerificationError(null);
+
+    try {
+      // 1. Upload to temporary or permanent path
+      const fileExt = file.name.split('.').pop();
+      const tempPath = `temp/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('verification-documents')
+        .upload(tempPath, file);
+
+      if (uploadError) throw uploadError;
+
+      // 2. Call Edge Function with minimum 2s delay
+      const [response] = await Promise.all([
+        supabase.functions.invoke('verify-document', {
+          body: {
+            document_path: tempPath,
+            full_name: formData.fullName,
+            college_name: formData.college,
+            campus_name: formData.campus,
+            user_type: isOldStudent ? 'old' : 'current'
+          }
+        }),
+        new Promise(resolve => setTimeout(resolve, 2000))
+      ]);
+
+      if (response.error) {
+        // Try to extract a specific error message if available
+        let errorMsg = "Verification failed";
+        try {
+          // Supabase function errors can be tricky to parse directly
+          const context = response.error as any;
+          if (context.context && typeof context.context.json === 'function') {
+            const body = await context.context.json();
+            errorMsg = body.error || errorMsg;
+          } else if (context.message) {
+            errorMsg = context.message;
+          }
+        } catch (e) {
+          errorMsg = response.error.message || errorMsg;
+        }
+        throw new Error(errorMsg);
+      }
+
+      setVerificationState('success');
+    } catch (error: any) {
+      console.error("Verification error details:", error);
+      setVerificationState('error');
+      
+      let displayError = error.message || "Could not verify document. Please try again.";
+      if (displayError.includes("non-2xx")) {
+        displayError = "Verification failed. Please ensure the document is clear and contains your name and college.";
+      }
+      setVerificationError(displayError);
     }
   };
 
   const handleCollegeSelect = (collegeName: string) => {
     updateFormData('college', collegeName);
-    updateFormData('campus', '');
-    const college = colleges?.find(c => c.college_name === collegeName);
-    setSelectedCollegeId(college?.id || null);
   };
 
   const renderStepContent = () => {
+    const states = Object.keys(collegeData) as (keyof typeof collegeData)[];
+    const selectedState = formData.state as keyof typeof collegeData;
+    const colleges = selectedState ? Object.keys(collegeData[selectedState]) : [];
+    const selectedCollege = formData.college;
+    const campuses = (selectedState && selectedCollege) ? (collegeData[selectedState] as any)[selectedCollege] || [] : [];
+
     switch (currentStep) {
       case 1:
         return (
@@ -276,7 +365,7 @@ const Connect = () => {
                 <SelectValue placeholder="Choose your state" />
               </SelectTrigger>
               <SelectContent>
-                {states?.map(state => (
+                {states.map(state => (
                   <SelectItem key={state} value={state}>{state}</SelectItem>
                 ))}
               </SelectContent>
@@ -293,8 +382,8 @@ const Connect = () => {
                 <SelectValue placeholder="Choose your college" />
               </SelectTrigger>
               <SelectContent>
-                {colleges?.map(college => (
-                  <SelectItem key={college.id} value={college.college_name || ''}>{college.college_name}</SelectItem>
+                {colleges.map(college => (
+                  <SelectItem key={college} value={college}>{college}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -310,8 +399,8 @@ const Connect = () => {
                 <SelectValue placeholder="Choose your campus" />
               </SelectTrigger>
               <SelectContent>
-                {campuses?.map(campus => (
-                  <SelectItem key={campus.id} value={campus.campus_name || ''}>{campus.campus_name}</SelectItem>
+                {campuses.map((campus: string) => (
+                  <SelectItem key={campus} value={campus}>{campus}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -401,20 +490,80 @@ const Connect = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium">Verification Document <span className="text-destructive">*</span></label>
               <p className="text-xs text-muted-foreground">ID Card, Hall Ticket, Marks Memo, or Certificate</p>
-              <label className="flex items-center justify-center h-16 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary transition-colors">
-                {formData.document ? (
-                  <div className="flex items-center gap-2 text-primary">
-                    <FileText className="w-5 h-5" />
-                    <span className="text-sm">{formData.document.name}</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Upload className="w-5 h-5" />
-                    <span className="text-sm">Upload document (Required)</span>
-                  </div>
+
+              <AnimatePresence mode="wait">
+                {verificationState === 'idle' && (
+                  <motion.div
+                    key="upload"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <label className="flex flex-col items-center justify-center h-48 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary transition-colors bg-card/30">
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <Upload className="w-10 h-10 mb-2" />
+                        <span className="font-medium text-foreground">Click or drag to upload ID</span>
+                        <span className="text-xs">JPG, PNG, or PDF</span>
+                      </div>
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={handleFileUpload('document')} />
+                    </label>
+                  </motion.div>
                 )}
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={handleFileUpload('document')} />
-              </label>
+
+                {verificationState === 'verifying' && (
+                  <motion.div
+                    key="verifying"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="flex flex-col items-center justify-center h-48 border-2 border-border rounded-xl bg-card/30"
+                  >
+                    <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+                    <p className="font-medium text-lg">Verifying your document...</p>
+                    <p className="text-sm text-muted-foreground">This will only take a moment</p>
+                  </motion.div>
+                )}
+
+                {verificationState === 'success' && (
+                  <motion.div
+                    key="success"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center justify-center h-48 border-2 border-success/50 rounded-xl bg-success/10"
+                  >
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", damping: 12 }}
+                    >
+                      <CheckCircle2 className="w-12 h-12 text-success mb-3" />
+                    </motion.div>
+                    <p className="font-bold text-lg text-success">Document Verified!</p>
+                    <p className="text-sm text-success/80">Your student identity has been confirmed.</p>
+                  </motion.div>
+                )}
+
+                {verificationState === 'error' && (
+                  <motion.div
+                    key="error"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center justify-center h-48 border-2 border-destructive/50 rounded-xl bg-destructive/10 px-4 text-center"
+                  >
+                    <XCircle className="w-12 h-12 text-destructive mb-3" />
+                    <p className="font-bold text-lg text-destructive">Verification Failed</p>
+                    <p className="text-sm text-destructive/80 mb-4">{verificationError}</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setVerificationState('idle')}
+                      className="border-destructive text-destructive hover:bg-destructive hover:text-white"
+                    >
+                      Upload Different Document
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         );
@@ -486,7 +635,7 @@ const Connect = () => {
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="w-16 h-16 rounded-2xl gradient-bg flex items-center justify-center mx-auto mb-4">
               <GraduationCap className="w-8 h-8 text-primary-foreground" />
             </motion.div>
-            <CardTitle className="text-2xl">Join StudentSpace</CardTitle>
+            <CardTitle className="text-2xl">Join IntelliCampus</CardTitle>
             <CardDescription>Step {currentStep} of 7: {steps[currentStep - 1].title}</CardDescription>
           </CardHeader>
 
@@ -512,10 +661,12 @@ const Connect = () => {
                   Back
                 </Button>
               )}
-              <Button variant="gradient" onClick={handleNext} disabled={!canProceed() || isLoading} className="flex-1">
-                {isLoading ? 'Creating Account...' : currentStep === 7 ? 'Create Account' : 'Continue'}
-                {!isLoading && currentStep < 7 && <ArrowRight className="w-4 h-4 ml-2" />}
-              </Button>
+              {!(currentStep === 6 && verificationState !== 'success') && (
+                <Button variant="gradient" onClick={handleNext} disabled={!canProceed() || isLoading} className="flex-1">
+                  {isLoading ? 'Creating Account...' : currentStep === 7 ? 'Create Account' : 'Continue'}
+                  {!isLoading && currentStep < 7 && <ArrowRight className="w-4 h-4 ml-2" />}
+                </Button>
+              )}
             </div>
 
             <div className="mt-6 text-center">

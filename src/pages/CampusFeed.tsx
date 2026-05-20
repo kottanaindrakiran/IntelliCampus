@@ -134,7 +134,13 @@ const CampusFeed = () => {
           {categories.map((category) => (
             <button
               key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
+              onClick={() => {
+                if (category.id === 'project') {
+                  navigate('/feed/projects');
+                } else {
+                  setSelectedCategory(category.id);
+                }
+              }}
               className={cn(
                 "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
                 selectedCategory === category.id

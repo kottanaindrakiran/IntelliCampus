@@ -68,6 +68,9 @@ const CreatePost = ({ onClose }: CreatePostProps) => {
         } else {
           // For video/project, we currently support single selection mode (replaces previous)
           setSelectedFiles([files[0]]);
+          if (type === 'project') {
+            setSelectedCategory('project');
+          }
           setFileType(type);
         }
       }

@@ -33,30 +33,46 @@ export const useFollow = (targetUserId: string) => {
         mutationFn: async () => {
             if (!currentUser) throw new Error("Not logged in");
 
+            // Use upsert to handle potential race conditions or double-clicks gracefully
             const { error } = await supabase
                 .from('follows')
-                .insert({
+                .upsert({
                     follower_id: currentUser.id,
                     following_id: targetUserId
                 });
 
             if (error) {
-                throw error;
+                // If the error isn't a duplicate key, throw it
+                if (error.code !== '23505') throw error;
             }
         },
+        onMutate: async () => {
+            // Cancel any outgoing refetches
+            await queryClient.cancelQueries({ queryKey: ['isFollowing', targetUserId] });
+            // Snapshot the previous value
+            const previousValue = queryClient.getQueryData(['isFollowing', targetUserId]);
+            // Optimistically update to the new value
+            queryClient.setQueryData(['isFollowing', targetUserId], true);
+            return { previousValue };
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['isFollowing', targetUserId] });
             queryClient.invalidateQueries({ queryKey: ['followCounts', targetUserId] });
             queryClient.invalidateQueries({ queryKey: ['followCounts', currentUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['isMutualFollow', targetUserId] });
-            toast({ title: "Followed", description: "You are now following this user." });
         },
-        onError: (error: any) => {
+        onError: (error: any, _, context) => {
+            // Roll back to the previous value
+            if (context?.previousValue !== undefined) {
+                queryClient.setQueryData(['isFollowing', targetUserId], context.previousValue);
+            }
             toast({
                 title: "Cannot Follow",
                 description: error.message || "Failed to follow user.",
                 variant: "destructive"
             });
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['isFollowing', targetUserId] });
         }
     });
 
@@ -72,19 +88,29 @@ export const useFollow = (targetUserId: string) => {
 
             if (error) throw error;
         },
+        onMutate: async () => {
+            await queryClient.cancelQueries({ queryKey: ['isFollowing', targetUserId] });
+            const previousValue = queryClient.getQueryData(['isFollowing', targetUserId]);
+            queryClient.setQueryData(['isFollowing', targetUserId], false);
+            return { previousValue };
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['isFollowing', targetUserId] });
             queryClient.invalidateQueries({ queryKey: ['followCounts', targetUserId] });
             queryClient.invalidateQueries({ queryKey: ['followCounts', currentUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['isMutualFollow', targetUserId] });
-            toast({ title: "Unfollowed" });
         },
-        onError: (error: any) => {
+        onError: (error: any, _, context) => {
+            if (context?.previousValue !== undefined) {
+                queryClient.setQueryData(['isFollowing', targetUserId], context.previousValue);
+            }
             toast({
                 title: "Error",
                 description: error.message || "Failed to unfollow user.",
                 variant: "destructive"
             });
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['isFollowing', targetUserId] });
         }
     });
 

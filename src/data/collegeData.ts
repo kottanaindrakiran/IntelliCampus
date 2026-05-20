@@ -1,0 +1,137 @@
+export const collegeData = {
+  "Andhra Pradesh": {
+    "Gayatri Vidya Parishad (GVP)": [
+      "GVP College of Engineering - Madhurawada, Visakhapatnam",
+      "GVP College of Engineering for Women (GVPCEW) - Rushikonda, Visakhapatnam",
+      "GVP College for Degree & PG Courses - Rushikonda, Visakhapatnam",
+      "GVP Institute of Health Care & Medical Technology - Marikavalasa, Visakhapatnam",
+      "GVP Institute of Higher Learning & Research (GVPIHLR) - Visakhapatnam",
+    ],
+    "Andhra University": [
+      "Main Campus - Visakhapatnam",
+      "AU College of Engineering - Visakhapatnam",
+      "AU PG Centre - Vizianagaram",
+    ],
+    "GITAM University": [
+      "Visakhapatnam Campus",
+      "Hyderabad Campus - Rudraram",
+    ],
+    "KL University": [
+      "Vaddeswaram Campus - Guntur",
+      "Hyderabad Campus - Aziz Nagar",
+    ],
+    "VIT-AP University": ["Amaravati Campus"],
+    "Acharya Nagarjuna University": [
+      "Main Campus - Guntur",
+      "PG Centre - Ongole",
+      "PG Centre - Nuzvid",
+    ],
+    "Sri Venkateswara University": [
+      "Main Campus - Tirupati",
+      "PG Centre - Kavali",
+    ],
+    "JNTU Kakinada": [
+      "Main Campus - Kakinada",
+      "University College of Engineering - Vizianagaram",
+    ],
+    "RGUKT (Rajiv Gandhi University of Knowledge Technologies)": [
+      "IIIT Nuzvid",
+      "IIIT RK Valley - Kadapa",
+      "IIIT Ongole",
+      "IIIT Srikakulam",
+    ],
+    "Vignan's University": ["Vadlamudi Campus - Guntur"],
+    "Sri Krishnadevaraya University": ["Main Campus - Anantapur"],
+    "Amrita Vishwa Vidyapeetham (Amaravati)": ["Amaravati Campus"],
+    "Siddhartha Engineering College": ["Vijayawada Campus"],
+    "Andhra Loyola College": ["Vijayawada Campus"],
+  },
+
+  "Tamil Nadu": {
+    "SRM Institute of Science and Technology": [
+      "Kattankulathur Campus - Chennai",
+      "Ramapuram Campus - Chennai",
+      "Vadapalani Campus - Chennai",
+      "Trichy Campus",
+    ],
+    "VIT University": [
+      "Main Campus - Vellore",
+      "Chennai Campus",
+    ],
+    "Anna University": [
+      "CEG Campus - Chennai",
+      "MIT Campus - Chennai",
+      "ACT Campus - Chennai",
+      "SAP Campus - Chennai",
+    ],
+    "Amrita Vishwa Vidyapeetham": [
+      "Coimbatore Campus",
+      "Chennai Campus",
+      "Ettimadai Campus",
+    ],
+    "SASTRA University": [
+      "Thanjavur Campus",
+      "Kumbakonam Campus",
+    ],
+    "Bharathidasan University": [
+      "Main Campus - Trichy",
+      "Constituent College - Perambalur",
+    ],
+    "Bharathiar University": ["Main Campus - Coimbatore"],
+    "Madurai Kamaraj University": [
+      "Main Campus - Madurai",
+      "Constituent College - Ramanathapuram",
+    ],
+    "IIT Madras": ["Main Campus - Chennai"],
+    "NIT Trichy": ["Main Campus - Trichy"],
+    "PSG College of Technology": ["Coimbatore Campus"],
+    "Coimbatore Institute of Technology": ["Coimbatore Campus"],
+    "Thiagarajar College of Engineering": ["Madurai Campus"],
+    "Kongu Engineering College": ["Perundurai Campus - Erode"],
+    "Kumaraguru College of Technology": ["Coimbatore Campus"],
+    "SSN College of Engineering": ["Kalavakkam Campus - Chennai"],
+    "Rajalakshmi Engineering College": ["Chennai Campus"],
+    "Saveetha Engineering College": ["Chennai Campus"],
+    "Loyola College": ["Chennai Campus"],
+    "Presidency College": ["Chennai Campus"],
+    "Tamil Nadu Agricultural University": ["Coimbatore Campus"],
+  },
+
+  "Telangana": {
+    "Osmania University": [
+      "Main Campus - Hyderabad",
+      "University College of Technology - Hyderabad",
+      "PG College - Secunderabad",
+    ],
+    "JNTU Hyderabad": [
+      "Main Campus - Kukatpally, Hyderabad",
+      "University College of Engineering - Manthani",
+    ],
+    "University of Hyderabad": ["Main Campus - Gachibowli, Hyderabad"],
+    "BITS Pilani - Hyderabad Campus": ["Jawahar Nagar - Hyderabad"],
+    "IIT Hyderabad": ["Kandi Campus - Sangareddy"],
+    "GITAM University (Hyderabad)": ["Rudraram Campus"],
+    "KL University (Hyderabad)": ["Aziz Nagar Campus - Hyderabad"],
+    "Kakatiya University": [
+      "Main Campus - Warangal",
+      "University College of Engineering - Warangal",
+    ],
+    "Malla Reddy University": [
+      "Maisammaguda Campus - Hyderabad",
+      "Dhulapally Campus - Hyderabad",
+    ],
+    "Chaitanya Bharathi Institute of Technology (CBIT)": ["Gandipet - Hyderabad"],
+    "Vasavi College of Engineering": ["Ibrahimbagh - Hyderabad"],
+    "Mahatma Gandhi Institute of Technology": ["Gandipet - Hyderabad"],
+    "Institute of Aeronautical Engineering": ["Dundigal - Hyderabad"],
+    "Sreenidhi Institute of Science and Technology": ["Ghatkesar - Hyderabad"],
+    "Anurag University": ["Ghatkesar - Hyderabad"],
+    "SR University": ["Warangal Campus"],
+    "Woxsen University": ["Kamkole - Hyderabad"],
+    "NALSAR University of Law": ["Shameerpet - Hyderabad"],
+    "ICFAI University Hyderabad": ["Dontanapally - Hyderabad"],
+    "Telangana University": ["Dichpally - Nizamabad"],
+    "Palamuru University": ["Mahabubnagar Campus"],
+    "Satavahana University": ["Karimnagar Campus"],
+  },
+};

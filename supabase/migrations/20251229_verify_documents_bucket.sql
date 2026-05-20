@@ -17,5 +17,16 @@ FOR SELECT
 TO authenticated
 USING ( bucket_id = 'verification-documents' AND auth.uid() = owner );
 
--- Policy for backend service role (full access) - usually implicit but good to be handled if needed
--- Note: Service role bypasses RLS, so this might not be strictly necessary if using service key.
+-- Policy to allow anonymous uploads to temp folder for before-signup verification
+CREATE POLICY "Allow anonymous uploads to temp folder"
+ON storage.objects
+FOR INSERT
+TO anon, authenticated
+WITH CHECK ( bucket_id = 'verification-documents' AND (name LIKE 'temp/%' ));
+
+-- Policy to allow everyone to read from the temp folder (needed for Edge Function context if not using service key)
+CREATE POLICY "Allow everyone to read from temp folder"
+ON storage.objects
+FOR SELECT
+TO anon, authenticated
+USING ( bucket_id = 'verification-documents' AND (name LIKE 'temp/%' ));

@@ -77,7 +77,7 @@ const Login = () => {
               <GraduationCap className="w-8 h-8 text-primary-foreground" />
             </motion.div>
             <CardTitle className="text-2xl">Welcome Back</CardTitle>
-            <CardDescription>Login to your StudentSpace account</CardDescription>
+            <CardDescription>Login to your IntelliCampus account</CardDescription>
           </CardHeader>
 
           <CardContent>
